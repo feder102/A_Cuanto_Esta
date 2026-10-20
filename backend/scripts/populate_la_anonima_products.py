@@ -27,7 +27,7 @@ CATEGORIES = {
     "Limpieza":              ["detergente", "lavandina", "suavizante"],
     "Higiene":               ["shampoo", "jabon", "pasta dental"],
     "Alimentos básicos":     ["arroz", "fideos", "harina 0000", "azucar", "sal"],
-    "Desayuno":              ["galletitas", "mermelada", "cafe", "yerba"],
+    "Desayuno":              ["galletitas", "mermelada", "cafe", "café", "yerba", "yerba mate", "barra proteica"],
 }
 
 

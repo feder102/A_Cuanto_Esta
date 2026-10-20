@@ -28,7 +28,8 @@ CATEGORIES = {
     "Limpieza":              ["detergente", "lavandina", "suavizante"],
     "Higiene":               ["shampoo", "jabon", "pasta dental"],
     "Alimentos básicos":     ["arroz", "fideos", "harina", "azucar"],
-    "Snacks":                ["galletitas", "chocolate", "caramelos"],
+    "Snacks":                ["galletitas", "chocolate", "caramelos", "barra proteica"],
+    "Desayuno":              ["cafe", "café", "yerba mate"],
 }
 
 
