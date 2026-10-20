@@ -113,7 +113,12 @@ class CarrefourScraper(BaseScraper):
         if on_sale and discount_pct is not None and discount_pct > 80:
             on_sale, discount_pct, list_price = False, None, None
 
+        # Sin EAN, un id interno estable (como "la_anonima_123") para que la
+        # deduplicación por alias tenga un alias_id; si no, queda en None y el
+        # INSERT en product_aliases falla por NOT NULL.
         barcode = item.get("ean") or None
+        if not barcode and raw.get("productId"):
+            barcode = f"{self.name}_{raw['productId']}"
         image_url = ((item.get("images") or [{}])[0]).get("imageUrl")
         url = f"{self.store_url}/{raw['linkText']}/p"
         category = _category_from_vtex(raw.get("categories") or [])
