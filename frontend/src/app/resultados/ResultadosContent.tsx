@@ -10,6 +10,7 @@ import type { ProductCategory, ProductList, ProductWithPrices } from "@/types";
 import { CATEGORIES_DESIGN, DESIGN_TO_BACKEND, SUPERMARKETS_DESIGN as SUPERMARKETS_LIST, SAN_JUAN_SUPERMARKETS } from "@/lib/categoryMap";
 import { Price, SMSwatch, ImagePlaceholder, Icon, fmtPrice } from "@/components/design/components";
 import { computeUnitPrice } from "@/lib/unitPrice";
+import { saveSupermarkets, getSavedSupermarkets, resultsUrl } from "@/lib/supermarketFilter";
 import { useShoppingList } from "@/lib/shoppingListContext";
 
 export default function ResultadosContent() {
@@ -33,6 +34,18 @@ export default function ResultadosContent() {
   const [smOpen, setSmOpen] = useState(true);
   const [priceOpen, setPriceOpen] = useState(false);
   const [varOpen, setVarOpen] = useState(false);
+
+  // Si se llegó a /resultados sin ?super= (link directo, navegación), se restaura
+  // el filtro guardado. Al deseleccionar todo se guarda vacío, así no vuelve solo.
+  useEffect(() => {
+    if (smFilterArray.length > 0) return;
+    const saved = getSavedSupermarkets();
+    if (saved.length === 0) return;
+    const params = new URLSearchParams(searchParams.toString());
+    for (const sm of saved) params.append("super", sm);
+    router.replace(`/resultados?${params.toString()}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const hasQ = Boolean(q && q.trim());
   const backendCat = categoria ? (DESIGN_TO_BACKEND[categoria] as ProductCategory) : undefined;
@@ -102,6 +115,7 @@ export default function ResultadosContent() {
   const toggleSm = (id: string) => {
     const next = new Set(smFilter);
     if (next.has(id)) next.delete(id); else next.add(id);
+    saveSupermarkets(next);
     router.push(buildResultsUrl({ page: 1, superSet: next }));
   };
 
@@ -109,7 +123,9 @@ export default function ResultadosContent() {
   const sanJuanActive =
     smFilter.size === sanJuanIds.length && sanJuanIds.every((id) => smFilter.has(id));
   const toggleSanJuan = () => {
-    router.push(buildResultsUrl({ page: 1, superSet: sanJuanActive ? new Set() : new Set(sanJuanIds) }));
+    const next = sanJuanActive ? new Set<string>() : new Set(sanJuanIds);
+    saveSupermarkets(next);
+    router.push(buildResultsUrl({ page: 1, superSet: next }));
   };
 
   const applyPriceChip = (min: string, max: string) => {
@@ -158,7 +174,7 @@ export default function ResultadosContent() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   const val = (e.target as HTMLInputElement).value.trim();
-                  if (val) router.push(`/resultados?q=${encodeURIComponent(val)}`);
+                  if (val) router.push(resultsUrl({ q: val }));
                 }
               }}
             />
@@ -194,14 +210,14 @@ export default function ResultadosContent() {
                   label="Todas las categorías"
                   selected={!categoria}
                   count={facets ? Object.values(facets).reduce((a, b) => a + b, 0) : undefined}
-                  onClick={() => { router.push(q ? `/resultados?q=${encodeURIComponent(q)}` : "/resultados"); setCatOpen(false); }}
+                  onClick={() => { router.push(resultsUrl({ q })); setCatOpen(false); }}
                 />
                 {CATEGORIES_DESIGN.map((c) => {
                   const backendId = DESIGN_TO_BACKEND[c.id] as string | undefined;
                   return (
                     <FilterRow key={c.id}
                       selected={categoria === c.id}
-                      onClick={() => { router.push(`/resultados?${q ? `q=${encodeURIComponent(q)}&` : ""}categoria=${c.id}`); setCatOpen(false); }}
+                      onClick={() => { router.push(resultsUrl({ q, categoria: c.id })); setCatOpen(false); }}
                       label={c.name}
                       count={backendId && facets ? facets[backendId] : undefined}
                     />
@@ -367,13 +383,13 @@ export default function ResultadosContent() {
             <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
               {catLabel && (
                 <button className="chip active"
-                  onClick={() => router.push(q ? `/resultados?q=${encodeURIComponent(q)}` : "/resultados")}>
+                  onClick={() => router.push(resultsUrl({ q }))}>
                   {catLabel} <Icon.close style={{ marginLeft: 2 }} />
                 </button>
               )}
               {q && (
                 <button className="chip active"
-                  onClick={() => router.push(categoria ? `/resultados?categoria=${categoria}` : "/resultados")}>
+                  onClick={() => router.push(resultsUrl({ categoria }))}>
                   &quot;{q}&quot; <Icon.close style={{ marginLeft: 2 }} />
                 </button>
               )}

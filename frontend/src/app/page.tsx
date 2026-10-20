@@ -7,6 +7,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { getProductCount, getEconomicContext, getProductFacets, getPriceIndex, getTopMovers } from "@/lib/api";
 import { CATEGORIES_DESIGN } from "@/lib/categoryMap";
+import { resultsUrl } from "@/lib/supermarketFilter";
 import { CatIcon } from "@/components/design/icons";
 import { VarBadge, fmtPrice, fmtPct, Icon } from "@/components/design/components";
 import type { EconomicContext } from "@/types";
@@ -71,7 +72,7 @@ export default function Home() {
 
   const submit = (q?: string) => {
     const term = q ?? query;
-    if (term.trim()) router.push(`/resultados?q=${encodeURIComponent(term.trim())}`);
+    if (term.trim()) router.push(resultsUrl({ q: term.trim() }));
   };
 
   return (
@@ -188,7 +189,7 @@ export default function Home() {
                 <motion.button
                   key={cat.id}
                   className="card"
-                  onClick={() => router.push(`/resultados?categoria=${cat.id}`)}
+                  onClick={() => router.push(resultsUrl({ categoria: cat.id }))}
                   whileHover={{ y: -4, scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}

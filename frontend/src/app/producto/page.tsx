@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQueries } from "@tanstack/react-query";
 import { getProductCount } from "@/lib/api";
 import { CATEGORIES_DESIGN } from "@/lib/categoryMap";
+import { resultsUrl } from "@/lib/supermarketFilter";
 import { CatIcon } from "@/components/design/icons";
 import { Icon, fmtPct } from "@/components/design/components";
 
@@ -31,7 +32,7 @@ export default function ProductoIndexPage() {
 
   const submit = (q?: string) => {
     const term = (q ?? query).trim();
-    if (term) router.push(`/resultados?q=${encodeURIComponent(term)}`);
+    if (term) router.push(resultsUrl({ q: term }));
   };
 
   return (
@@ -90,7 +91,7 @@ export default function ProductoIndexPage() {
           const count = categoryQueries[i]?.data?.count;
           return (
             <button key={cat.id} className="card"
-              onClick={() => router.push(`/resultados?categoria=${cat.id}`)}
+              onClick={() => router.push(resultsUrl({ categoria: cat.id }))}
               style={{
                 display: "flex", alignItems: "center", gap: 12,
                 padding: "12px 14px", background: "var(--surface)", border: "1px solid var(--border)",

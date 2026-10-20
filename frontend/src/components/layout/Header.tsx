@@ -8,6 +8,7 @@ import { Icon } from "@/components/design/components";
 import { useTheme } from "@/lib/themeContext";
 import { useShoppingList } from "@/lib/shoppingListContext";
 import { usePriceAlerts } from "@/lib/priceAlertsContext";
+import { saveSupermarkets, useSavedSupermarkets } from "@/lib/supermarketFilter";
 import { SUPERMARKETS_DESIGN, SAN_JUAN_SUPERMARKETS } from "@/lib/categoryMap";
 
 // Tab icons — SVGs inline desde app.jsx del diseño de referencia
@@ -74,7 +75,9 @@ export default function Header() {
   // en vez de tener su propia copia desincronizada (mismo tipo de bug que el
   // de los gráficos con ancho fantasma: dos fuentes de verdad que divergen).
   const isOnResultados = pathname.startsWith("/resultados");
-  const activeSupermarkets = isOnResultados ? searchParams.getAll("super") : [];
+  const savedSupermarkets = useSavedSupermarkets();
+  // En /resultados manda la URL; en el resto de las páginas, el filtro guardado.
+  const activeSupermarkets = isOnResultados ? searchParams.getAll("super") : savedSupermarkets;
   const isSanJuan =
     activeSupermarkets.length === SAN_JUAN_IDS.length &&
     SAN_JUAN_IDS.every((id) => activeSupermarkets.includes(id));
@@ -86,12 +89,16 @@ export default function Header() {
     : SUPERMARKETS.find((s) => s.id === supermarketId)?.label ?? "Todos";
 
   const handleSupermarketSelect = (id: string) => {
-    // Fuera de /resultados, elegir "Todos" no tiene nada que limpiar: no navegamos.
-    if (!isOnResultados && id === ALL_SUPERMARKETS_ID) return;
+    // Fuera de /resultados, elegir "Todos" solo limpia el filtro guardado: no navegamos.
+    if (!isOnResultados && id === ALL_SUPERMARKETS_ID) {
+      saveSupermarkets([]);
+      return;
+    }
     const params = new URLSearchParams(isOnResultados ? searchParams.toString() : undefined);
     params.delete("super");
     if (id === SAN_JUAN_ID) SAN_JUAN_IDS.forEach((sm) => params.append("super", sm));
     else if (id !== ALL_SUPERMARKETS_ID) params.append("super", id);
+    saveSupermarkets(params.getAll("super"));
     router.push(`/resultados?${params.toString()}`);
   };
 
