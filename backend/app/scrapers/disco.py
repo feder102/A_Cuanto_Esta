@@ -21,3 +21,4 @@ class DiscoScraper(CarrefourScraper):
         self.search_url       = f"{settings.DISCO_API_URL}{_VTEX_SEARCH_PATH}"
         self.store_url        = settings.DISCO_STORE_URL
         self.supermarket_enum = Supermarket.DISCO
+        self.region_postal_code = None  # sin sucursal en San Juan: precio online nacional

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { searchProducts, getProductsList, getProductFacets } from "@/lib/api";
 import type { SortOrder } from "@/lib/api";
 import type { ProductCategory, ProductList, ProductWithPrices } from "@/types";
-import { CATEGORIES_DESIGN, DESIGN_TO_BACKEND, SUPERMARKETS_DESIGN as SUPERMARKETS_LIST } from "@/lib/categoryMap";
+import { CATEGORIES_DESIGN, DESIGN_TO_BACKEND, SUPERMARKETS_DESIGN as SUPERMARKETS_LIST, SAN_JUAN_SUPERMARKETS } from "@/lib/categoryMap";
 import { Price, SMSwatch, ImagePlaceholder, Icon, fmtPrice } from "@/components/design/components";
 import { computeUnitPrice } from "@/lib/unitPrice";
 import { useShoppingList } from "@/lib/shoppingListContext";
@@ -103,6 +103,13 @@ export default function ResultadosContent() {
     const next = new Set(smFilter);
     if (next.has(id)) next.delete(id); else next.add(id);
     router.push(buildResultsUrl({ page: 1, superSet: next }));
+  };
+
+  const sanJuanIds = SAN_JUAN_SUPERMARKETS.map((s) => s.id);
+  const sanJuanActive =
+    smFilter.size === sanJuanIds.length && sanJuanIds.every((id) => smFilter.has(id));
+  const toggleSanJuan = () => {
+    router.push(buildResultsUrl({ page: 1, superSet: sanJuanActive ? new Set() : new Set(sanJuanIds) }));
   };
 
   const applyPriceChip = (min: string, max: string) => {
@@ -221,6 +228,28 @@ export default function ResultadosContent() {
                 <path d="m9 18 6-6-6-6"/>
               </svg>
             </button>
+            {smOpen && (
+              <div style={{ marginBottom: 10 }}>
+                <button
+                  onClick={toggleSanJuan}
+                  aria-pressed={sanJuanActive}
+                  title={SAN_JUAN_SUPERMARKETS.map((s) => `${SUPERMARKETS_LIST.find((x) => x.id === s.id)?.name}: ${s.priceNote}`).join("\n")}
+                  style={{
+                    width: "100%", padding: "7px 10px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600,
+                    border: "1px solid var(--primary)",
+                    background: sanJuanActive ? "var(--primary)" : "transparent",
+                    color: sanJuanActive ? "#fff" : "var(--primary)",
+                  }}
+                >
+                  📍 Solo San Juan
+                </button>
+                {sanJuanActive && (
+                  <div style={{ fontSize: 11, color: "var(--fg-3)", marginTop: 6 }}>
+                    Precios de San Juan (CP 5400) donde hay sucursal; Vea y Átomo usan precio online.
+                  </div>
+                )}
+              </div>
+            )}
             {smOpen && (
               <div className="col" style={{ gap: 0 }}>
                 {SUPERMARKETS_LIST.map((s) => {

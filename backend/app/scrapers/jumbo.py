@@ -21,3 +21,4 @@ class JumboScraper(CarrefourScraper):
         self.search_url       = f"{settings.JUMBO_API_URL}{_VTEX_SEARCH_PATH}"
         self.store_url        = settings.JUMBO_STORE_URL
         self.supermarket_enum = Supermarket.JUMBO
+        self.region_postal_code = None  # sin sucursal en San Juan: precio online nacional

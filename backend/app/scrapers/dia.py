@@ -21,3 +21,4 @@ class DiaScraper(CarrefourScraper):
         self.search_url       = f"{settings.DIA_API_URL}{_VTEX_SEARCH_PATH}"
         self.store_url        = settings.DIA_STORE_URL
         self.supermarket_enum = Supermarket.DIA
+        self.region_postal_code = None  # sin sucursal en San Juan: precio online nacional

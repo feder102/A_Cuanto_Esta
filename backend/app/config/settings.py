@@ -92,6 +92,10 @@ class Settings(BaseSettings):
     CHANGO_MAS_API_URL: str   = "https://www.masonline.com.ar"
     CHANGO_MAS_STORE_URL: str = "https://www.masonline.com.ar"
     
+    # Precios de San Juan (Carrefour y Chango Más por región VTEX, La Anónima por sucursal)
+    SAN_JUAN_POSTAL_CODE: str = "5400"
+    LA_ANONIMA_SAN_JUAN_BRANCH_ID: str = "180"  # ex Hiper Libertad
+
     # Logging
     LOG_LEVEL: str = "INFO"
     LOG_FILE: str = "logs/app.log"

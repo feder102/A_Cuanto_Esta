@@ -23,6 +23,8 @@ from app.scrapers.utils.normalizer import (
 
 PER_PAGE = 50
 _VTEX_SEARCH_PATH = "/api/catalog_system/pub/products/search"
+_VTEX_REGIONS_PATH = "/api/checkout/pub/regions"
+_VTEX_INTELLIGENT_SEARCH_PATH = "/api/io/_v/api/intelligent-search/product_search/"
 
 
 class CarrefourScraper(BaseScraper):
@@ -40,9 +42,40 @@ class CarrefourScraper(BaseScraper):
         self.search_url       = f"{settings.CARREFOUR_API_URL}{_VTEX_SEARCH_PATH}"
         self.store_url        = settings.CARREFOUR_STORE_URL
         self.supermarket_enum = Supermarket.CARREFOUR
+        # Si se setea, los precios son los de esa región (ej. "5400" = San Juan).
+        # catalog_system ignora la región, así que en ese caso se busca con
+        # intelligent-search + regionId.
+        self.region_postal_code: str | None = settings.SAN_JUAN_POSTAL_CODE
+        self._region_id: str | None = None
+        self._region_resolved = False
+
+    def _get_region_id(self) -> str | None:
+        """regionId VTEX del código postal configurado (se resuelve una sola vez)."""
+        if self._region_resolved or not self.region_postal_code:
+            return self._region_id
+        self._region_resolved = True
+        regions = self._get(f"{self.store_url}{_VTEX_REGIONS_PATH}", params={
+            "country": "ARG",
+            "postalCode": self.region_postal_code,
+        })
+        if isinstance(regions, list) and regions:
+            self._region_id = regions[0].get("id")
+        else:
+            print(f"[{self.name}] No se pudo resolver la región {self.region_postal_code}: precios sin región")
+        return self._region_id
 
     def search(self, query: str, from_: int = 0) -> list | None:
         """Llama al endpoint de búsqueda de VTEX."""
+        region_id = self._get_region_id()
+        if region_id:
+            result = self._get(f"{self.store_url}{_VTEX_INTELLIGENT_SEARCH_PATH}", params={
+                "query": query,
+                "count": PER_PAGE,
+                "page": from_ // PER_PAGE + 1,
+                "regionId": region_id,
+                "allowRedirect": "false",
+            })
+            return result.get("products") if isinstance(result, dict) else None
         result = self._get(self.search_url, params={
             "ft": urllib.parse.quote(query),
             "_from": from_,

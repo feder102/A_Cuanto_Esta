@@ -46,6 +46,17 @@ export const SUPERMARKETS_DESIGN: DesignSupermarket[] = [
   { id: "chango_mas", name: "Chango Más"  },
 ];
 
+// Supermercados con precio para San Juan (CP 5400) y qué precio se está leyendo.
+// Se usa para el atajo "San Juan" del filtro de /resultados: al activarlo solo se
+// buscan estos supermercados.
+export const SAN_JUAN_SUPERMARKETS: { id: string; priceNote: string }[] = [
+  { id: "carrefour",  priceNote: "Sucursal San Juan (CP 5400)" },
+  { id: "chango_mas", priceNote: "Región San Juan (CP 5400)" },
+  { id: "la_anonima", priceNote: "Sucursal San Juan, ex Hiper Libertad" },
+  { id: "vea",        priceNote: "Precio online nacional" },
+  { id: "atomo",      priceNote: "Precio de la tienda online" },
+];
+
 // Design category ID → backend category ID
 export const DESIGN_TO_BACKEND: Record<string, ProductCategory> = Object.fromEntries(
   CATEGORIES_DESIGN.map((c) => [c.id, c.backendId])

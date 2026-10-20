@@ -21,3 +21,4 @@ class VeaScraper(CarrefourScraper):
         self.search_url       = f"{settings.VEA_API_URL}{_VTEX_SEARCH_PATH}"
         self.store_url        = settings.VEA_STORE_URL
         self.supermarket_enum = Supermarket.VEA
+        self.region_postal_code = None  # precio online nacional

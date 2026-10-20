@@ -45,6 +45,12 @@ class LaAnonimaScraper(BaseScraper):
         self.search_url       = f"{settings.LA_ANONIMA_API_URL}{_SEARCH_PATH}"
         self.store_url        = settings.LA_ANONIMA_STORE_URL
         self.supermarket_enum = Supermarket.LA_ANONIMA
+        # Los precios son por sucursal: se fija la de San Juan (ex Hiper Libertad).
+        self.session.cookies.update({
+            "Id-Sucursal-Super": settings.LA_ANONIMA_SAN_JUAN_BRANCH_ID,
+            "codigoPostal": settings.SAN_JUAN_POSTAL_CODE,
+            "seleccionocp": "1",
+        })
 
     def search(self, query: str, pagina: int = 1) -> list | None:
         """Llama al buscador de La Anónima. Retorna lista de artículos o None."""
