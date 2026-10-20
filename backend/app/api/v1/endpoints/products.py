@@ -5,6 +5,7 @@ GET /api/v1/products          — Listado con paginación y filtros
 GET /api/v1/products/search   — Búsqueda avanzada con filtros de precio y variación
 GET /api/v1/products/{id}     — Detalle con precios actuales por supermercado
 """
+import re
 from datetime import timedelta
 from enum import Enum
 from typing import Literal
@@ -237,6 +238,17 @@ def _build_products_with_prices(
     return result
 
 
+_EAN_RE = re.compile(r"^\d{8,14}$")
+
+
+def _text_filter(q: str):
+    """Filtro de búsqueda: por código de barras si q es un EAN, si no por nombre."""
+    q = q.strip()
+    if _EAN_RE.match(q):
+        return Product.barcode == q
+    return Product.normalized_name.ilike(f"%{q.lower()}%")
+
+
 @router.get("/search", response_model=product_schemas.ProductList)
 def search_products(
     q: str = Query(..., min_length=1, description="Texto a buscar en nombre del producto"),
@@ -255,7 +267,7 @@ def search_products(
     db: Session = Depends(get_db),
 ):
     query = db.query(Product).filter(
-        Product.normalized_name.ilike(f"%{q.lower()}%")
+        _text_filter(q)
     )
 
     if category:
@@ -409,7 +421,7 @@ def list_products(
     if category:
         query = query.filter(Product.category == category)
     if search:
-        query = query.filter(Product.normalized_name.ilike(f"%{search.lower()}%"))
+        query = query.filter(_text_filter(search))
 
     if supermarkets:
         latest_price_sq = (
@@ -518,7 +530,7 @@ def get_product_facets(
     """Count de productos por categoría. Con q, filtra por texto de búsqueda."""
     base = db.query(Product.category, func.count(Product.id))
     if q:
-        base = base.filter(Product.normalized_name.ilike(f"%{q.lower()}%"))
+        base = base.filter(_text_filter(q))
     rows = base.group_by(Product.category).all()
     result = {cat.value: 0 for cat in ProductCategory}
     for cat, count in rows:
