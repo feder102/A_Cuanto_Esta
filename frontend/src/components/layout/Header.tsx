@@ -8,7 +8,7 @@ import { Icon } from "@/components/design/components";
 import { useTheme } from "@/lib/themeContext";
 import { useShoppingList } from "@/lib/shoppingListContext";
 import { usePriceAlerts } from "@/lib/priceAlertsContext";
-import { SUPERMARKETS_DESIGN } from "@/lib/categoryMap";
+import { SUPERMARKETS_DESIGN, SAN_JUAN_SUPERMARKETS } from "@/lib/categoryMap";
 
 // Tab icons — SVGs inline desde app.jsx del diseño de referencia
 function IconResults() {
@@ -45,8 +45,11 @@ const TABS = [
 ];
 
 const ALL_SUPERMARKETS_ID = "__all__";
+const SAN_JUAN_ID = "__san_juan__";
+const SAN_JUAN_IDS = SAN_JUAN_SUPERMARKETS.map((s) => s.id);
 const SUPERMARKETS = [
   { id: ALL_SUPERMARKETS_ID, label: "Todos" },
+  { id: SAN_JUAN_ID, label: "📍 Solo San Juan" },
   ...SUPERMARKETS_DESIGN.map((s) => ({ id: s.id, label: s.name })),
 ];
 
@@ -72,8 +75,13 @@ export default function Header() {
   // de los gráficos con ancho fantasma: dos fuentes de verdad que divergen).
   const isOnResultados = pathname.startsWith("/resultados");
   const activeSupermarkets = isOnResultados ? searchParams.getAll("super") : [];
-  const supermarketId = activeSupermarkets.length === 1 ? (activeSupermarkets[0] ?? ALL_SUPERMARKETS_ID) : ALL_SUPERMARKETS_ID;
-  const supermarketLabel = activeSupermarkets.length > 1
+  const isSanJuan =
+    activeSupermarkets.length === SAN_JUAN_IDS.length &&
+    SAN_JUAN_IDS.every((id) => activeSupermarkets.includes(id));
+  const supermarketId = isSanJuan
+    ? SAN_JUAN_ID
+    : activeSupermarkets.length === 1 ? (activeSupermarkets[0] ?? ALL_SUPERMARKETS_ID) : ALL_SUPERMARKETS_ID;
+  const supermarketLabel = activeSupermarkets.length > 1 && !isSanJuan
     ? `${activeSupermarkets.length} supermercados`
     : SUPERMARKETS.find((s) => s.id === supermarketId)?.label ?? "Todos";
 
@@ -82,7 +90,8 @@ export default function Header() {
     if (!isOnResultados && id === ALL_SUPERMARKETS_ID) return;
     const params = new URLSearchParams(isOnResultados ? searchParams.toString() : undefined);
     params.delete("super");
-    if (id !== ALL_SUPERMARKETS_ID) params.append("super", id);
+    if (id === SAN_JUAN_ID) SAN_JUAN_IDS.forEach((sm) => params.append("super", sm));
+    else if (id !== ALL_SUPERMARKETS_ID) params.append("super", id);
     router.push(`/resultados?${params.toString()}`);
   };
 
